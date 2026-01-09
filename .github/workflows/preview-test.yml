@@ -1,0 +1,28 @@
+name: Preview Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # In a real setup, this would be your deployment step
+      # For testing, we'll use a dummy URL
+      - name: Mock Deploy
+        id: deploy
+        run: |
+          echo "url=https://example-preview-${{ github.event.pull_request.number }}.vercel.app" >> $GITHUB_OUTPUT
+
+      - name: Run Morph Preview Test
+        uses: morphllm/preview-test-action@v1
+        with:
+          api-key: ${{ secrets.MORPH_API_KEY }}
+          preview-url: ${{ steps.deploy.outputs.url }}
+          instructions: |
+            Test the main page loads correctly.
+            Check for any JavaScript errors in the console.
